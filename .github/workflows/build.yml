@@ -2,6 +2,14 @@ name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   main:
     strategy:
@@ -21,8 +29,13 @@ jobs:
         run: npm ci
       
       - name: Run tests
-        run: npm test
+        run: "npm run test:coverage"
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      
       - name: Run lint
         run: npm run lint
       
